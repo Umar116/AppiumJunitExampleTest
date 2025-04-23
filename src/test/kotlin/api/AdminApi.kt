@@ -10,7 +10,7 @@ val password: String = dotenv["ADMIN_PASSWORD"]
 val apiUrl: String = dotenv["ADMIN_URL"]
 
 class AdminApi {
-    private fun `get admin token`(): String? {
+    private fun getAdminToken(): String? {
         val url = "$apiUrl/auth/verify-otp"
         val body = "{\n" +
                 "  \"code\": \"$password\",\n" +
@@ -25,8 +25,8 @@ class AdminApi {
     }
 
 
-    private fun `get digital model`(): String {
-        val token = `get admin token`()
+    private fun getDigitalModel(): String {
+        val token = getAdminToken()
         val url = "$apiUrl/digitalmdl"
 
         val response = given()
@@ -40,11 +40,11 @@ class AdminApi {
     }
 
     fun createDigitalItem(): String? {
-        val token = `get admin token`()
+        val token = getAdminToken()
         val url = "$apiUrl/digitalitem"
-        val digital_m_id = `get digital model`()
+        val digitalModelId = getDigitalModel()
         val body = "{\n" +
-                "  \"digitalModelId\": \"$digital_m_id\", \n" +
+                "  \"digitalModelId\": \"$digitalModelId\", \n" +
                 "  \"isActive\": \"true\",\n" +
                 "  \"estimatedPriceCents\": \"0\" \n}"
         val response = given()
