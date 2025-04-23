@@ -2,7 +2,7 @@ package pages
 
 import org.openqa.selenium.By
 import org.slf4j.LoggerFactory
-import utils.Actions
+import Actions
 
 class Marketplace : Actions() {
 

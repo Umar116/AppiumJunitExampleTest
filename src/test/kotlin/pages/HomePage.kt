@@ -1,6 +1,6 @@
 package pages
 
-import utils.Actions
+import Actions
 import org.openqa.selenium.By
 
 class HomePage : Actions() {

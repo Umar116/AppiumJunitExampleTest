@@ -1,7 +1,6 @@
 package pages
 
-import utils.Actions
-import api.TempMailClient
+import Actions
 import org.openqa.selenium.By
 import org.openqa.selenium.support.ui.WebDriverWait
 import kotlin.test.assertEquals
