@@ -1,28 +1,138 @@
-/*
- * Copyright (C) 2021 Baracoda Daily Healthtech
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is
- * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and limitations
- * under the License.
- */
+import api.AdminApi
 import org.junit.jupiter.api.Test
-import org.openqa.selenium.By
+import pages.AuthPage
+import pages.Brands
+import pages.HomePage
+import pages.Marketplace
+import pages.WardrobePage
 import kotlin.test.assertEquals
 
 class MultiplicationTests : AppiumSetup() {
+
     @Test
-    fun `Simple multiplication give correct result`() {
-        driver.findElement(By.id(DIGIT_5)).click()
-        driver.findElement(By.id(MULTIPLICATION)).click()
-        driver.findElement(By.id(DIGIT_8)).click()
-        driver.findElement(By.id(EQUAL)).click()
-        val result = driver.findElement(By.className("android.widget.TextView")).text
-        assertEquals("40", result)
+    fun buyPhygitalProduct() {
+        val loginInApp = AuthPage()
+        val marketplace = Marketplace()
+
+        val homePage = HomePage()
+        homePage.assertMarketplaceTitle()
+
+        loginInApp.openLoginPage()
+        loginInApp.loginThrowGoogle()
+        marketplace.openMarketplace()
+        marketplace.openItemCard()
+        marketplace.clickBuyButton()
+        marketplace.chooseProductSize("UK6")
+        marketplace.inputShippingAddress()
+        marketplace.inputCardData(cardNumber = "4242424242424242", cardDate = "0145")
+        assertEquals(
+            Constants.SUCCESS_ORDER_NOTIFICATION,
+            marketplace.getObjectText(marketplace.successPurchasePageTitle)
+        )
     }
+
+    @Test
+    fun buyDigitalProduct() {
+        val loginInApp = AuthPage()
+        val marketplace = Marketplace()
+
+        val homePage = HomePage()
+        homePage.assertMarketplaceTitle()
+
+        loginInApp.openLoginPage()
+        loginInApp.loginThrowGoogle()
+        marketplace.openMarketplace()
+        marketplace.openItemCard()
+        marketplace.openProductTypes()
+        marketplace.chooseProductOption(Constants.DIGITAL_ONLY_PRODUCT)
+        marketplace.inputCardData(cardNumber = "4242424242424242", cardDate = "0145")
+        assertEquals(
+            Constants.SUCCESS_ORDER_NOTIFICATION,
+            marketplace.getObjectText(marketplace.successPurchasePageTitle)
+        )
+    }
+
+    @Test
+    fun paymentDeclined() {
+        val loginInApp = AuthPage()
+        val marketplace = Marketplace()
+
+        val homePage = HomePage()
+        homePage.assertMarketplaceTitle()
+
+        loginInApp.openLoginPage()
+        loginInApp.loginThrowGoogle()
+        marketplace.openMarketplace()
+        marketplace.openItemCard()
+        marketplace.openProductTypes()
+        marketplace.chooseProductOption(Constants.DIGITAL_ONLY_PRODUCT)
+        marketplace.inputCardData(cardNumber = "4000000000000002", cardDate = "0145")
+        assertEquals(
+            Constants.DECLINE_PAYMENT_NOTIFICATION,
+            marketplace.getObjectText(marketplace.cardDeclineNotification)
+        )
+    }
+
+    @Test
+    fun redirectingOnAuthPageFromMarketplace() {
+        val loginInApp = AuthPage()
+        val marketplace = Marketplace()
+        val homePage = HomePage()
+        homePage.assertMarketplaceTitle()
+
+        marketplace.openMarketplace()
+        marketplace.openItemCard()
+        marketplace.openProductTypes()
+        marketplace.chooseProductOption(Constants.DIGITAL_ONLY_PRODUCT)
+        assertEquals(
+            "Sign in to continue",
+            marketplace.getObjectText(loginInApp.signInToContinueTitle)
+        )
+    }
+
+    @Test
+    fun redirectingOnAuthPageFromWardrobe() {
+        val loginInApp = AuthPage()
+        val marketplace = Marketplace()
+        val homePage = HomePage()
+
+        homePage.assertMarketplaceTitle()
+        marketplace.openMarketplace()
+        marketplace.openItemCard()
+        marketplace.clickBuyButton()
+        assertEquals(
+            "Sign in to continue",
+            marketplace.getObjectText(loginInApp.signInToContinueTitle)
+        )
+    }
+
+    @Test
+    fun itemAddedByDeepLink(){
+        val loginInApp = AuthPage()
+        val marketplace = Marketplace()
+        val wardrobe = WardrobePage()
+        val adminApi = AdminApi()
+
+        val link = adminApi.createDigitalItem()
+        marketplace.openDeepLink(link.toString())
+        loginInApp.loginThrowGoogle()
+
+        marketplace.claimProduct()
+        val brand = wardrobe.getBrandName()
+        assertEquals("1 People", brand)
+    }
+
+    @Test
+    fun brandsDisplayed(){
+        val homePage = HomePage()
+        val brand = Brands()
+        val marketplace = Marketplace()
+
+        homePage.assertMarketplaceTitle()
+        marketplace.openMarketplace()
+        marketplace.openBrandsList()
+        val title = brand.getBrandsPageTitle()
+        assertEquals(title, "Brands")
+    }
+
 }
